@@ -1187,10 +1187,13 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA)
         minTime = 1.0;
         nMinKF = 10;
     }
-
+//    cout << "NN: print 1" <<endl;
 
     if(mpAtlas->KeyFramesInMap()<nMinKF)
+    {
+//        cout << "NN: mpAtlas->KeyFranesInMap(): " << mpAtlas->KeyFramesInMap() << endl;
         return;
+    }
 
     // Retrieve all keyframe in temporal order
     list<KeyFrame*> lpKF;
@@ -1202,14 +1205,15 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA)
     }
     lpKF.push_front(pKF);
     vector<KeyFrame*> vpKF(lpKF.begin(),lpKF.end());
+//    cout << "NN: print 2";
 
     if(vpKF.size()<nMinKF)
         return;
-
+//    cout << "NN: print 3";
     mFirstTs=vpKF.front()->mTimeStamp;
     if(mpCurrentKeyFrame->mTimeStamp-mFirstTs<minTime)
         return;
-
+//    cout << "NN: print 4";
     bInitializing = true;
 
     while(CheckNewKeyFrames())
@@ -1274,7 +1278,7 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA)
         bInitializing=false;
         return;
     }
-
+//    cout << "NN: print 5";
     // Before this line we are not changing the map
     {
         unique_lock<mutex> lock(mpAtlas->GetCurrentMap()->mMutexMapUpdate);
@@ -1287,6 +1291,7 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA)
         // Check if initialization OK
         if (!mpAtlas->isImuInitialized())
             for (int i = 0; i < N; i++) {
+//                cout << "NN: KF " << vpKF[i]->mnId;
                 KeyFrame *pKF2 = vpKF[i];
                 pKF2->bImu = true;
             }
@@ -1295,7 +1300,9 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA)
     mpTracker->UpdateFrameIMU(1.0,vpKF[0]->GetImuBias(),mpCurrentKeyFrame);
     if (!mpAtlas->isImuInitialized())
     {
+//        cout << "NN: isImuInitialized() false" << endl;
         mpAtlas->SetImuInitialized();
+//        cout << "NN: isImuInitialized(): " << mpAtlas->isImuInitialized() << endl;
         mpTracker->t0IMU = mpTracker->mCurrentFrame.mTimeStamp;
         mpCurrentKeyFrame->bImu = true;
     }
@@ -1422,7 +1429,7 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA)
     bInitializing = false;
 
     mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();
-
+//    cout << "NN: print 6";
     return;
 }
 

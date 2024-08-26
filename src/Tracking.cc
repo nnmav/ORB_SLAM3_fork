@@ -2125,6 +2125,7 @@ void Tracking::Track()
             if(bOK)
             {
                 bOK = TrackLocalMap();
+//                cout << "NN: bOK ->" << bOK << endl;
 
             }
             if(!bOK)
@@ -2199,6 +2200,40 @@ void Tracking::Track()
 
         // Update drawer
         mpFrameDrawer->Update(this);
+
+        // Read csv contents.
+        std::string filename = "cv_keypoints.csv";
+        std::ofstream outFile(filename, std::ios::app);  // Append mode
+
+        if (!outFile.is_open()) {
+            std::cerr << "Error opening file: " << filename << std::endl;
+            return;
+        }
+        outFile << std::fixed << std::setprecision(3);
+        // Write keypoints to the file
+        for (const auto& kp : mCurrentFrame.mvKeys) {
+            outFile << mCurrentFrame.mTimeStamp*(1e9) << ","
+                    << kp.pt.x << ","
+                    << kp.pt.y << ","
+                    << kp.size << ","
+                    << kp.angle << ","
+                    << kp.response << ","
+                    << kp.octave << ","
+                    << kp.class_id << std::endl;
+        }
+
+        outFile.close();
+
+        // [NN addition]: Access and print the KeyPoint properties
+//        std::cout << '"' << mCurrentFrame.mTimeStamp << '"' std::endl;
+//        std::cout << "Position: [" << mCurrentFrame.mvKeys[0].pt.x << ", " << mCurrentFrame.mvKeys[0].pt.y << "]," << std::endl;
+//        std::cout << "Size: " << mCurrentFrame.mvKeys[0].size << "," << std::endl;
+//        std::cout << "Angle: " << mCurrentFrame.mvKeys[0].angle << "," << std::endl;
+//        std::cout << "Response: " << mCurrentFrame.mvKeys[0].response << "," << std::endl;
+//        std::cout << "Octave: " << mCurrentFrame.mvKeys[0].octave << "," << std::endl;
+//        std::cout << "Class ID: " << mCurrentFrame.mvKeys[0].class_id << std::endl;
+
+
         if(mCurrentFrame.isSet())
             mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.GetPose());
 
@@ -2536,6 +2571,7 @@ void Tracking::CreateInitialMapMonocular()
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
 
+//    cout << "{NN - CreateInitialMapMonocular} KFini: " << pKFini->mnId << " KFcur: " << pKFcur->mnId << endl;
     // Insert KFs in the map
     mpAtlas->AddKeyFrame(pKFini);
     mpAtlas->AddKeyFrame(pKFcur);
@@ -3023,21 +3059,25 @@ bool Tracking::TrackLocalMap()
                 mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
         }
     }
-
+//    cout << "NN: mnMatchesInLiers ->" << mnMatchesInliers <<endl;
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently
     mpLocalMapper->mnMatchesInliers=mnMatchesInliers;
+//    cout << "NN: Exit 0" << endl;
+
     if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && mnMatchesInliers<50)
         return false;
-
+//    cout << "NN: Exit 1" << endl;
     if((mnMatchesInliers>10)&&(mState==RECENTLY_LOST))
         return true;
 
+//    cout << "NN: Exit 2" << endl;
 
     if (mSensor == System::IMU_MONOCULAR)
     {
         if((mnMatchesInliers<15 && mpAtlas->isImuInitialized())||(mnMatchesInliers<50 && !mpAtlas->isImuInitialized()))
         {
+//            cout << "NN: Exit 3" << endl;
             return false;
         }
         else
@@ -3065,8 +3105,11 @@ bool Tracking::NeedNewKeyFrame()
 {
     if((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) && !mpAtlas->GetCurrentMap()->isImuInitialized())
     {
-        if (mSensor == System::IMU_MONOCULAR && (mCurrentFrame.mTimeStamp-mpLastKeyFrame->mTimeStamp)>=0.25)
+//        cout << "{NN - NeedNewKeyFrame} !mpAtlas->GetCurrentMap()->isImuInitialized()" << endl;
+        if (mSensor == System::IMU_MONOCULAR && (mCurrentFrame.mTimeStamp-mpLastKeyFrame->mTimeStamp)>=0.25) {
+//            cout << "{NN - NeedNewKeyFrame} mCurrentFrame.mTimeStamp-mpLastKeyFrame->mTimeStamp = " << mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp << endl;
             return true;
+        }
         else if ((mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) && (mCurrentFrame.mTimeStamp-mpLastKeyFrame->mTimeStamp)>=0.25)
             return true;
         else
@@ -3082,6 +3125,7 @@ bool Tracking::NeedNewKeyFrame()
         {
             std::cout << "NeedNewKeyFrame: localmap stopped" << std::endl;
         }*/
+//        cout << "{NN - NeedNewKeyFrame} mpLocalMapper->isStopped() || mpLocalMapper->stopRequested()" << endl;
         return false;
     }
 
@@ -3090,6 +3134,7 @@ bool Tracking::NeedNewKeyFrame()
     // Do not insert keyframes if not enough frames have passed from last relocalisation
     if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && nKFs>mMaxFrames)
     {
+//        cout << "{NN - NeedNewKeyFrame} mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && nKFs>mMaxFrames" << endl;
         return false;
     }
 
@@ -3183,6 +3228,8 @@ bool Tracking::NeedNewKeyFrame()
         c4=true;
     else
         c4=false;
+
+//    cout << "{NN - NeedNewKeyFrame} c1a: " << c1a << " c1b: " << c1b << " c1c: " << c1c << " c2: " << c2 << " c3: " << c3 << " c4: " << c4 << endl;
 
     if(((c1a||c1b||c1c) && c2)||c3 ||c4)
     {

@@ -262,6 +262,8 @@ int main(int argc, char **argv)
     {
         SLAM.SaveTrajectoryEuRoC("CameraTrajectory.txt");
         SLAM.SaveKeyFrameTrajectoryEuRoC("KeyFrameTrajectory.txt");
+        SLAM.SaveAllEuRoCTrajectories();
+        SLAM.SaveAllEuRoCKeyFrameTrajectories();
     }
 
     sort(vTimesTrack.begin(),vTimesTrack.end());

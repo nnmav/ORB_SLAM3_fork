@@ -40,6 +40,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    cout << "Modified Stereo for LaMAR" << endl;
+
     const int num_seq = (argc-3)/2;
     cout << "num_seq = " << num_seq << endl;
     bool bFileName= (((argc-3) % 2) == 1);
@@ -88,7 +90,7 @@ int main(int argc, char **argv)
     cout.precision(17);
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::STEREO, true);
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::STEREO, false);
 
     cv::Mat imLeft, imRight;
     for (seq = 0; seq<num_seq; seq++)
@@ -180,6 +182,8 @@ int main(int argc, char **argv)
     {
         SLAM.SaveTrajectoryEuRoC("CameraTrajectory.txt");
         SLAM.SaveKeyFrameTrajectoryEuRoC("KeyFrameTrajectory.txt");
+        SLAM.SaveAllEuRoCTrajectories();
+        SLAM.SaveAllEuRoCKeyFrameTrajectories();
     }
 
     return 0;

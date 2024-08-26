@@ -237,7 +237,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
 
     // Fix verbosity
-    Verbose::SetTh(Verbose::VERBOSITY_QUIET);
+    Verbose::SetTh(Verbose::VERBOSITY_DEBUG);
 
 }
 
@@ -879,6 +879,26 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
     //cout << "end saving trajectory" << endl;
     f.close();
     cout << endl << "End of saving trajectory to " << filename << " ..." << endl;
+}
+
+void System::SaveAllEuRoCTrajectories() {
+    vector<Map*> vpMaps = mpAtlas->GetAllMaps();
+
+    for(Map* pMap :vpMaps)
+    {
+        string filename = "CameraTrajectory_" + std::to_string(pMap->GetId()) + ".txt";
+        SaveTrajectoryEuRoC(filename, pMap);
+    }
+}
+
+void System::SaveAllEuRoCKeyFrameTrajectories() {
+    vector<Map*> vpMaps = mpAtlas->GetAllMaps();
+
+    for(Map* pMap :vpMaps)
+    {
+        string filename = "KeyFrameTrajectory_" + std::to_string(pMap->GetId()) + ".txt";
+        SaveKeyFrameTrajectoryTUM(filename);
+    }
 }
 
 /*void System::SaveTrajectoryEuRoC(const string &filename)
