@@ -91,3 +91,8 @@ my_settings.txt
 borrar/*
 
 */ExecMean.txt
+._.DS_Store
+.DS_Store
+*/DS_Store
+**/.DS_Store
+
